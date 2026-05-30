@@ -74,6 +74,7 @@ function AddonStep() {
                 </div>
             )}
 
+            {/* Selected summary */}
             {selectedAddons.length > 0 && (
                 <div className="bg-green-50 rounded-xl p-4">
                     <p className="text-sm font-medium text-green-800">
@@ -83,6 +84,7 @@ function AddonStep() {
                 </div>
             )}
 
+            {/* Navigation */}
             <div className="flex gap-3 pt-2">
                 <button
                     onClick={prevStep}
