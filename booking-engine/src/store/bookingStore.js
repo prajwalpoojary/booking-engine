@@ -43,10 +43,14 @@ const useBookingStore = create((set, get) => ({
         return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
     },
 
-    get totalAmount() {
-        const { selectedRoom, selectedAddons, numberOfNights } = get();
-        if (!selectedRoom || numberOfNights === 0) return 0;
-        const roomTotal = selectedRoom.pricePerNight * numberOfNights;
+    // Add this instead — a helper function, not a getter:
+    getTotalAmount: () => {
+        const { selectedRoom, selectedAddons, checkIn, checkOut } = get();
+        if (!selectedRoom || !checkIn || !checkOut) return 0;
+        const nights = Math.max(0, Math.floor(
+            (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
+        ));
+        const roomTotal = selectedRoom.pricePerNight * nights;
         const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
         return roomTotal + addonTotal;
     },
@@ -91,8 +95,29 @@ const useBookingStore = create((set, get) => ({
 
     setPaymentStatus: (status) => set({ paymentStatus: status }),
 
-    nextStep: () => set(state => ({ currentStep: state.currentStep + 1 })),
-    prevStep: () => set(state => ({ currentStep: state.currentStep - 1 })),
+    nextStep: () => {
+        const { currentStep, property } = get();
+        const hasAddons = property?.hasAddons;
+
+        // Skip step 3 if no addons
+        if (currentStep === 2 && !hasAddons) {
+            set({ currentStep: 4 });
+            return;
+        }
+        set({ currentStep: currentStep + 1 });
+    },
+
+    prevStep: () => {
+        const { currentStep, property } = get();
+        const hasAddons = property?.hasAddons;
+
+        // Skip step 3 backwards if no addons
+        if (currentStep === 4 && !hasAddons) {
+            set({ currentStep: 2 });
+            return;
+        }
+        set({ currentStep: currentStep - 1 });
+    },
     goToStep: (step) => set({ currentStep: step }),
 
     resetBooking: () => set({
