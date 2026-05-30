@@ -43,10 +43,13 @@ const useBookingStore = create((set, get) => ({
         return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
     },
 
-    get totalAmount() {
-        const { selectedRoom, selectedAddons, numberOfNights } = get();
-        if (!selectedRoom || numberOfNights === 0) return 0;
-        const roomTotal = selectedRoom.pricePerNight * numberOfNights;
+    getTotalAmount: () => {
+        const { selectedRoom, selectedAddons, checkIn, checkOut } = get();
+        if (!selectedRoom || !checkIn || !checkOut) return 0;
+        const nights = Math.max(0, Math.floor(
+            (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
+        ));
+        const roomTotal = selectedRoom.pricePerNight * nights;
         const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
         return roomTotal + addonTotal;
     },
