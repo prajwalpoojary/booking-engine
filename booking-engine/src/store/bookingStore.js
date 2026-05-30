@@ -32,7 +32,11 @@ const useBookingStore = create((set, get) => ({
     currentStep: 1,
 
     // ─── Derived ──────────────────────────────────────
-    get numberOfNights() {
+    // Remove the getter entirely and add this instead
+    numberOfNights: 0,
+
+    // Add this action
+    computeNights: () => {
         const { checkIn, checkOut } = get();
         if (!checkIn || !checkOut) return 0;
         const diff = new Date(checkOut) - new Date(checkIn);
