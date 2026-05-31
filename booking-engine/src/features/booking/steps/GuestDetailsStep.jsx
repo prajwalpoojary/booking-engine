@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import useBookingStore from '../../../store/bookingStore';
+import { calculateNights } from '../../../utils/booking';
 
 function GuestDetailsStep() {
     const property = useBookingStore(state => state.property);
@@ -17,11 +18,7 @@ function GuestDetailsStep() {
 
     const [errors, setErrors] = useState({});
 
-    const numberOfNights = checkIn && checkOut
-        ? Math.max(0, Math.floor(
-            (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
-          ))
-        : 0;
+    const numberOfNights = calculateNights(checkIn, checkOut);
 
     const totalAmount = getTotalAmount();
 
