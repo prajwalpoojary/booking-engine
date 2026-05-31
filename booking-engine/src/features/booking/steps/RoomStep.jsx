@@ -1,5 +1,6 @@
 import useBookingStore from '../../../store/bookingStore';
 import { rooms } from '../../../data/rooms';
+import { calculateNights } from '../../../utils/booking';
 
 function RoomStep() {
     const property = useBookingStore(state => state.property);
@@ -12,11 +13,7 @@ function RoomStep() {
     const nextStep = useBookingStore(state => state.nextStep);
     const prevStep = useBookingStore(state => state.prevStep);
 
-    const numberOfNights = checkIn && checkOut
-        ? Math.max(0, Math.floor(
-            (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
-          ))
-        : 0;
+    const numberOfNights = calculateNights(checkIn, checkOut);
 
     const availableRooms = rooms.filter(r =>
         r.propertyId === property?.id &&
