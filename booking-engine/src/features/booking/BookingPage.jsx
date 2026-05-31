@@ -84,6 +84,76 @@ function BookingPage() {
                     {renderStep()}
                 </div>
             </main>
+            <DevNav />
+        </div>
+    );
+}
+
+// Add this component inside BookingPage.jsx — above the return
+function DevNav() {
+    const goToStep = useBookingStore(state => state.goToStep);
+    const setProperty = useBookingStore(state => state.setProperty);
+    const setSelectedRoom = useBookingStore(state => state.setSelectedRoom);
+    const setSearchDetails = useBookingStore(state => state.setSearchDetails);
+    const setGuestDetails = useBookingStore(state => state.setGuestDetails);
+
+    if (import.meta.env.PROD) return null; // never shows in production
+
+    const fillTestData = () => {
+        setProperty({
+            id: 1,
+            name: "The Grand Mumbai",
+            location: "Mumbai",
+            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+            hasAddons: true,
+        });
+        setSearchDetails({
+            checkIn: '2026-07-01',
+            checkOut: '2026-07-03',
+            adults: 2,
+            children: 0,
+            childrenAges: [],
+            promoCode: '',
+        });
+        setSelectedRoom({
+            id: 2,
+            propertyId: 1,
+            name: "Deluxe Room",
+            type: "deluxe",
+            pricePerNight: 5500,
+            maxAdults: 2,
+            maxChildren: 2,
+            amenities: ["WiFi", "AC", "TV", "Mini Bar", "City View"],
+            image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800",
+        });
+        setGuestDetails({
+            name: 'Test User',
+            email: 'test@example.com',
+            phone: '9876543210',
+            message: '',
+        });
+    };
+
+    return (
+        <div className="fixed bottom-4 right-4 bg-gray-900 text-white rounded-xl p-3 space-y-2 text-xs z-50 opacity-80">
+            <p className="font-bold text-yellow-400">DEV</p>
+            <button
+                onClick={fillTestData}
+                className="block w-full bg-yellow-500 text-black px-3 py-1 rounded font-medium"
+            >
+                Fill Test Data
+            </button>
+            <div className="grid grid-cols-3 gap-1">
+                {[1,2,3,4,5,6].map(s => (
+                    <button
+                        key={s}
+                        onClick={() => goToStep(s)}
+                        className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                    >
+                        S{s}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
