@@ -4,6 +4,7 @@ import { properties } from '../../data/properties';
 import { rooms } from '../../data/rooms';
 import useBookingStore from '../../store/bookingStore';
 import useRecentlyViewedStore from '../../store/recentlyViewedStore';
+import HotelListRTK from './HotelListRTK';
 
 // ─── Search Store (local — only used on this page) ────────────────
 function useHotelFilter() {
@@ -133,7 +134,7 @@ function HomePage() {
                     <h2 className="text-lg font-semibold text-gray-800">
                         Search Properties
                     </h2>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4">
                         <input
                             type="text"
                             placeholder="Search by city..."
@@ -186,6 +187,8 @@ function HomePage() {
                         </div>
                     )}
                 </div>
+                {/* Hotels via Redux */}
+                <HotelListRTK />
             </main>
         </div>
     );
