@@ -1,71 +1,49 @@
-import useBookingStore from '../../../store/bookingStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleAddon, nextStep, prevStep } from '../../../store/bookingStore';
 import { addons } from '../../../data/rooms';
 
 function AddonStep() {
-    const property = useBookingStore(state => state.property);
-    const selectedAddons = useBookingStore(state => state.selectedAddons);
-    const toggleAddon = useBookingStore(state => state.toggleAddon);
-    const nextStep = useBookingStore(state => state.nextStep);
-    const prevStep = useBookingStore(state => state.prevStep);
+    const dispatch = useDispatch();
+    const property = useSelector((state) => state.booking.property);
+    const selectedAddons = useSelector((state) => state.booking.selectedAddons);
 
-    const availableAddons = addons.filter(a => a.propertyId === property?.id);
+    const availableAddons = addons.filter((a) => a.propertyId === property?.id);
 
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                    Extra Services
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                    Optional add-ons for your stay
-                </p>
+                <h2 className="text-xl font-semibold text-gray-800">Extra Services</h2>
+                <p className="text-sm text-gray-500 mt-1">Optional add-ons for your stay</p>
             </div>
 
             {availableAddons.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">
-                    No add-ons available for this property.
-                </p>
+                <p className="text-gray-500 text-center py-8">No add-ons available for this property.</p>
             ) : (
                 <div className="space-y-3">
-                    {availableAddons.map(addon => {
-                        const isSelected = selectedAddons.some(a => a.id === addon.id);
+                    {availableAddons.map((addon) => {
+                        const isSelected = selectedAddons.some((a) => a.id === addon.id);
                         return (
                             <div
                                 key={addon.id}
-                                onClick={() => toggleAddon(addon)}
-                                className={`
-                                    flex items-center justify-between p-4 rounded-xl border-2 
-                                    cursor-pointer transition-all duration-200
+                                onClick={() => dispatch(toggleAddon(addon))}
+                                className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
                                     ${isSelected
                                         ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300'}
-                                `}
+                                        : 'border-gray-200 hover:border-gray-300'}`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className={`
-                                        w-5 h-5 rounded-full border-2 flex items-center 
-                                        justify-center flex-shrink-0
-                                        ${isSelected
-                                            ? 'border-blue-500 bg-blue-500'
-                                            : 'border-gray-300'}
-                                    `}>
-                                        {isSelected && (
-                                            <span className="text-white text-xs">✓</span>
-                                        )}
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                                        ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}
+                                    >
+                                        {isSelected && <span className="text-white text-xs">✓</span>}
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-800">
-                                            {addon.name}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {addon.description}
-                                        </p>
+                                        <p className="font-medium text-gray-800">{addon.name}</p>
+                                        <p className="text-sm text-gray-500">{addon.description}</p>
                                     </div>
                                 </div>
                                 <div className="text-right ml-4 flex-shrink-0">
-                                    <p className="font-semibold text-gray-900">
-                                        ₹{addon.price.toLocaleString()}
-                                    </p>
+                                    <p className="font-semibold text-gray-900">₹{addon.price.toLocaleString()}</p>
                                     <p className="text-xs text-gray-500">per booking</p>
                                 </div>
                             </div>
@@ -87,13 +65,13 @@ function AddonStep() {
             {/* Navigation */}
             <div className="flex gap-3 pt-2">
                 <button
-                    onClick={prevStep}
+                    onClick={() => dispatch(prevStep())}
                     className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                     ← Back
                 </button>
                 <button
-                    onClick={nextStep}
+                    onClick={() => dispatch(nextStep())}
                     className="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                     Continue →

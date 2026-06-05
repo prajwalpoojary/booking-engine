@@ -1,8 +1,27 @@
-import { create } from 'zustand';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const useBookingStore = create((set, get) => ({
+// ─── Async Thunk ──────────────────────────────────
+export const submitBooking = createAsyncThunk(
+    'booking/submit',
+    async (bookingData, { rejectWithValue }) => {
+        try {
+            const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData),
+            });
+            if (!response.ok) throw new Error('Submission failed');
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
 
-    // ─── Step 1: Search ───────────────────────────────
+// ─── Initial State ────────────────────────────────
+const initialState = {
+    // Step 1: Search
     property: null,
     checkIn: '',
     checkOut: '',
@@ -11,13 +30,13 @@ const useBookingStore = create((set, get) => ({
     childrenAges: [],
     promoCode: '',
 
-    // ─── Step 2: Room ─────────────────────────────────
+    // Step 2: Room
     selectedRoom: null,
 
-    // ─── Step 3: Addons ───────────────────────────────
+    // Step 3: Addons
     selectedAddons: [],
 
-    // ─── Step 4: Guest Details ────────────────────────
+    // Step 4: Guest Details
     guestDetails: {
         name: '',
         email: '',
@@ -25,115 +44,143 @@ const useBookingStore = create((set, get) => ({
         message: '',
     },
 
-    // ─── Step 5: Payment ──────────────────────────────
-    paymentStatus: 'idle', // 'idle' | 'processing' | 'success' | 'failed'
+    // Step 5: Payment
+    paymentStatus: 'idle',
 
-    // ─── Flow Control ─────────────────────────────────
+    // Flow
     currentStep: 1,
 
-    // ─── Derived ──────────────────────────────────────
-    // Remove the getter entirely and add this instead
-    numberOfNights: 0,
+    // Submission
+    submissionStatus: 'idle',
+    submissionError: null,
+    bookingId: null,
+};
 
-    // Add this action
-    computeNights: () => {
-        const { checkIn, checkOut } = get();
-        if (!checkIn || !checkOut) return 0;
-        const diff = new Date(checkOut) - new Date(checkIn);
-        return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+// ─── Slice ────────────────────────────────────────
+const bookingSlice = createSlice({
+    name: 'booking',
+    initialState,
+    reducers: {
+        setProperty: (state, action) => {
+            state.property = action.payload;
+            state.selectedRoom = null;
+            state.selectedAddons = [];
+        },
+
+        setSearchDetails: (state, action) => {
+            Object.assign(state, action.payload);
+        },
+
+        setChildren: (state, action) => {
+            const count = action.payload;
+            const currentAges = state.childrenAges;
+            state.children = count;
+            state.childrenAges =
+                count > currentAges.length
+                    ? [...currentAges, ...Array(count - currentAges.length).fill('')]
+                    : currentAges.slice(0, count);
+        },
+
+        setSelectedRoom: (state, action) => {
+            state.selectedRoom = action.payload;
+            state.selectedAddons = [];
+        },
+
+        toggleAddon: (state, action) => {
+            const addon = action.payload;
+            const exists = state.selectedAddons.find((a) => a.id === addon.id);
+            if (exists) {
+                state.selectedAddons = state.selectedAddons.filter((a) => a.id !== addon.id);
+            } else {
+                state.selectedAddons.push(addon);
+            }
+        },
+
+        setGuestDetails: (state, action) => {
+            state.guestDetails = { ...state.guestDetails, ...action.payload };
+        },
+
+        setPaymentStatus: (state, action) => {
+            state.paymentStatus = action.payload;
+        },
+
+        nextStep: (state) => {
+            const hasAddons = state.property?.hasAddons;
+            // Skip addon step if no addons
+            if (state.currentStep === 2 && !hasAddons) {
+                state.currentStep = 4;
+                return;
+            }
+            state.currentStep += 1;
+        },
+
+        prevStep: (state) => {
+            const hasAddons = state.property?.hasAddons;
+            // Skip addon step backwards if no addons
+            if (state.currentStep === 4 && !hasAddons) {
+                state.currentStep = 2;
+                return;
+            }
+            state.currentStep -= 1;
+        },
+
+        goToStep: (state, action) => {
+            state.currentStep = action.payload;
+        },
+
+        resetBooking: () => initialState,
     },
-
-    // Add this instead — a helper function, not a getter:
-    getTotalAmount: () => {
-        const { selectedRoom, selectedAddons, checkIn, checkOut } = get();
-        if (!selectedRoom || !checkIn || !checkOut) return 0;
-        const nights = Math.max(0, Math.floor(
-            (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
-        ));
-        const roomTotal = selectedRoom.pricePerNight * nights;
-        const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
-        return roomTotal + addonTotal;
+    extraReducers: (builder) => {
+        builder
+            .addCase(submitBooking.pending, (state) => {
+                state.submissionStatus = 'loading';
+                state.submissionError = null;
+                state.bookingId = null;
+            })
+            .addCase(submitBooking.fulfilled, (state, action) => {
+                state.submissionStatus = 'success';
+                state.bookingId = action.payload.id;
+            })
+            .addCase(submitBooking.rejected, (state, action) => {
+                state.submissionStatus = 'error';
+                state.submissionError = action.payload;
+            });
     },
+});
 
-    // ─── Actions ──────────────────────────────────────
-    setSearchDetails: (details) => set(details),
+// ─── Exports ──────────────────────────────────────
+export const {
+    setProperty,
+    setSearchDetails,
+    setChildren,
+    setSelectedRoom,
+    toggleAddon,
+    setGuestDetails,
+    setPaymentStatus,
+    nextStep,
+    prevStep,
+    goToStep,
+    resetBooking,
+} = bookingSlice.actions;
 
-    setProperty: (property) => set({
-        property,
-        selectedRoom: null,
-        selectedAddons: [],
-    }),
+// ═══ Selectors ═════════════════════════════════════
+export const selectBooking = (state) => state.booking;
 
-    setChildren: (count) => {
-        const currentAges = get().childrenAges;
-        set({
-            children: count,
-            childrenAges: count > currentAges.length
-                ? [...currentAges, ...Array(count - currentAges.length).fill('')]
-                : currentAges.slice(0, count),
-        });
-    },
+export const selectNumberOfNights = (state) => {
+    const { checkIn, checkOut } = state.booking;
+    if (!checkIn || !checkOut) return 0;
+    return Math.max(0, Math.floor(
+        (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
+    ));
+};
 
-    setSelectedRoom: (room) => set({
-        selectedRoom: room,
-        selectedAddons: [],
-    }),
+export const selectTotalAmount = (state) => {
+    const { selectedRoom, selectedAddons } = state.booking;
+    const nights = selectNumberOfNights(state);
+    if (!selectedRoom || nights === 0) return 0;
+    const roomTotal = selectedRoom.pricePerNight * nights;
+    const addonTotal = selectedAddons.reduce((sum, a) => sum + (a.price || 0), 0);
+    return roomTotal + addonTotal;
+};
 
-    toggleAddon: (addon) => {
-        const current = get().selectedAddons;
-        const exists = current.find(a => a.id === addon.id);
-        set({
-            selectedAddons: exists
-                ? current.filter(a => a.id !== addon.id)
-                : [...current, addon],
-        });
-    },
-
-    setGuestDetails: (details) => set({
-        guestDetails: { ...get().guestDetails, ...details },
-    }),
-
-    setPaymentStatus: (status) => set({ paymentStatus: status }),
-
-    nextStep: () => {
-        const { currentStep, property } = get();
-        const hasAddons = property?.hasAddons;
-
-        // Skip step 3 if no addons
-        if (currentStep === 2 && !hasAddons) {
-            set({ currentStep: 4 });
-            return;
-        }
-        set({ currentStep: currentStep + 1 });
-    },
-
-    prevStep: () => {
-        const { currentStep, property } = get();
-        const hasAddons = property?.hasAddons;
-
-        // Skip step 3 backwards if no addons
-        if (currentStep === 4 && !hasAddons) {
-            set({ currentStep: 2 });
-            return;
-        }
-        set({ currentStep: currentStep - 1 });
-    },
-    goToStep: (step) => set({ currentStep: step }),
-
-    resetBooking: () => set({
-        property: null,
-        checkIn: '',
-        checkOut: '',
-        adults: 1,
-        children: 0,
-        childrenAges: [],
-        promoCode: '',
-        selectedRoom: null,
-        selectedAddons: [],
-        guestDetails: { name: '', email: '', phone: '', message: '' },
-        paymentStatus: 'idle',
-        currentStep: 1,
-    }),
-}));
-
-export default useBookingStore;
+export default bookingSlice.reducer;
