@@ -8,7 +8,7 @@ export const rooms = [
         maxAdults: 2,
         maxChildren: 1,
         amenities: ["WiFi", "AC", "TV"],
-        image: "dummy image 1",
+        image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Room+1",
     },
     {
         id: 2,
@@ -19,7 +19,7 @@ export const rooms = [
         maxAdults: 2,
         maxChildren: 2,
         amenities: ["WiFi", "AC", "TV", "Mini Bar", "City View"],
-        image: "dummy image 2",
+        image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Room+2",
     },
     {
         id: 3,
@@ -30,7 +30,7 @@ export const rooms = [
         maxAdults: 3,
         maxChildren: 2,
         amenities: ["WiFi", "AC", "TV", "Mini Bar", "Jacuzzi", "Butler Service"],
-        image: "dummy image 3",
+        image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Room+3",
     },
     {
         id: 4,
@@ -41,7 +41,7 @@ export const rooms = [
         maxAdults: 2,
         maxChildren: 1,
         amenities: ["WiFi", "AC", "TV"],
-        image: "dummy image 4",
+        image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Room+4",
     },
     {
         id: 5,
@@ -52,7 +52,7 @@ export const rooms = [
         maxAdults: 2,
         maxChildren: 0,
         amenities: ["WiFi", "AC", "TV", "Work Desk", "Coffee Machine"],
-        image: "dummy image 5",
+        image: "https://placehold.co/600x400/e2e8f0/1e293b?text=Room+5",
     },
 ];
 
