@@ -1,11 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import BookingPage from './features/booking/BookingPage';
+import HomePage from './features/home/HomePage';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Navigate to="/booking" replace />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/booking" element={<BookingPage />} />
             </Routes>
         </BrowserRouter>

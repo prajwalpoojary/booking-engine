@@ -34,7 +34,7 @@ function StepIndicator() {
             {visibleSteps.map((step, index) => (
                 <div key={step.id} className="flex items-center gap-2">
                     <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold
+                        className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold
                         ${currentStep === step.id
                             ? 'bg-blue-600 text-white'
                             : currentStep > step.id
@@ -43,13 +43,13 @@ function StepIndicator() {
                     >
                         {currentStep > step.id ? '✓' : index + 1}
                     </div>
-                    <span className={`text-sm hidden sm:block
+                    <span className={`hidden min-[1100px]:block
                         ${currentStep === step.id ? 'text-blue-600 font-medium' : 'text-gray-400'}
                     `}>
                         {step.label}
                     </span>
                     {index < visibleSteps.length - 1 && (
-                        <div className={`w-8 h-0.5
+                        <div className={`hidden min-[520px]:block w-10 h-0.5
                             ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}
                         `} />
                     )}
