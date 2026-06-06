@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { properties } from '../../data/properties';
 import { rooms } from '../../data/rooms';
-import useBookingStore from '../../store/bookingStore';
+import { setProperty } from '../../store/bookingStore';
 import useRecentlyViewedStore from '../../store/recentlyViewedStore';
 import HotelListRTK from './HotelListRTK';
+import HotelDetailRTQ from './HotelDetailRTQ';
 
 // ─── Search Store (local — only used on this page) ────────────────
 function useHotelFilter() {
@@ -25,7 +27,7 @@ function useHotelFilter() {
 // ─── Property Card ─────────────────────────────────────────────────
 function PropertyCard({ property }) {
     const navigate = useNavigate();
-    const setProperty = useBookingStore(state => state.setProperty);
+    const dispatch = useDispatch();
     const addHotel = useRecentlyViewedStore(state => state.addHotel);
 
     const propertyRooms = rooms.filter(r => r.propertyId === property.id);
@@ -35,7 +37,7 @@ function PropertyCard({ property }) {
 
     const handleClick = () => {
         addHotel(property);
-        setProperty(property);
+        dispatch(setProperty(property));
         navigate('/booking');
     };
 
@@ -71,14 +73,14 @@ function PropertyCard({ property }) {
 function RecentlyViewed() {
     const hotels = useRecentlyViewedStore(state => state.hotels);
     const navigate = useNavigate();
-    const setProperty = useBookingStore(state => state.setProperty);
+    const dispatch = useDispatch();
     const addHotel = useRecentlyViewedStore(state => state.addHotel);
 
     if (hotels.length === 0) return null;
 
     const handleClick = (hotel) => {
         addHotel(hotel);
-        setProperty(hotel);
+        dispatch(setProperty(hotel));
         navigate('/booking');
     };
 
@@ -189,6 +191,8 @@ function HomePage() {
                 </div>
                 {/* Hotels via Redux */}
                 <HotelListRTK />
+                {/* Hotel Detail via TanStack Query */}
+                <HotelDetailRTQ />
             </main>
         </div>
     );

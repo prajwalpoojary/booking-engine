@@ -1,31 +1,29 @@
-import useBookingStore from '../../../store/bookingStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { setSelectedRoom, nextStep, prevStep } from '../../../store/bookingStore';
 import { rooms } from '../../../data/rooms';
 import { calculateNights } from '../../../utils/booking';
 
 function RoomStep() {
-    const property = useBookingStore(state => state.property);
-    const adults = useBookingStore(state => state.adults);
-    const children = useBookingStore(state => state.children);
-    const checkIn = useBookingStore(state => state.checkIn);
-    const checkOut = useBookingStore(state => state.checkOut);
-    const selectedRoom = useBookingStore(state => state.selectedRoom);
-    const setSelectedRoom = useBookingStore(state => state.setSelectedRoom);
-    const nextStep = useBookingStore(state => state.nextStep);
-    const prevStep = useBookingStore(state => state.prevStep);
+    const dispatch = useDispatch();
+    const property = useSelector((state) => state.booking.property);
+    const adults = useSelector((state) => state.booking.adults);
+    const children = useSelector((state) => state.booking.children);
+    const checkIn = useSelector((state) => state.booking.checkIn);
+    const checkOut = useSelector((state) => state.booking.checkOut);
+    const selectedRoom = useSelector((state) => state.booking.selectedRoom);
 
     const numberOfNights = calculateNights(checkIn, checkOut);
 
-    const availableRooms = rooms.filter(r =>
-        r.propertyId === property?.id &&
-        r.maxAdults >= adults &&
-        r.maxChildren >= children
+    const availableRooms = rooms.filter(
+        (r) =>
+            r.propertyId === property?.id &&
+            r.maxAdults >= adults &&
+            r.maxChildren >= children
     );
 
     return (
         <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800">
-                Select Your Room
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-800">Select Your Room</h2>
 
             {/* Stay Summary */}
             <div className="bg-blue-50 rounded-xl p-4 text-sm text-blue-800">
@@ -42,7 +40,7 @@ function RoomStep() {
                 <div className="text-center py-8 text-gray-500">
                     <p>No rooms available for your guest count.</p>
                     <button
-                        onClick={prevStep}
+                        onClick={() => dispatch(prevStep())}
                         className="mt-4 text-blue-600 underline text-sm"
                     >
                         Go back and adjust guests
@@ -50,36 +48,23 @@ function RoomStep() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {availableRooms.map(room => {
+                    {availableRooms.map((room) => {
                         const isSelected = selectedRoom?.id === room.id;
                         return (
                             <div
                                 key={room.id}
-                                onClick={() => setSelectedRoom(room)}
-                                className={`
-                                    border-2 rounded-xl overflow-hidden cursor-pointer
-                                    transition-all duration-200
-                                    ${isSelected
-                                        ? 'border-blue-500'
-                                        : 'border-gray-200 hover:border-gray-300'}
-                                `}
+                                onClick={() => dispatch(setSelectedRoom(room))}
+                                className={`border-2 rounded-xl overflow-hidden cursor-pointer transition-all duration-200
+                                    ${isSelected ? 'border-blue-500' : 'border-gray-200 hover:border-gray-300'}`}
                             >
-                                <img
-                                    src={room.image}
-                                    alt={room.name}
-                                    className="w-full h-40 object-cover"
-                                />
+                                <img src={room.image} alt={room.name} className="w-full h-40 object-cover" />
                                 <div className="p-4 space-y-3">
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <h3 className="font-semibold text-gray-800">
-                                                {room.name}
-                                            </h3>
+                                            <h3 className="font-semibold text-gray-800">{room.name}</h3>
                                             <p className="text-sm text-gray-500 mt-1">
                                                 Up to {room.maxAdults} adults
-                                                {room.maxChildren > 0
-                                                    ? `, ${room.maxChildren} children`
-                                                    : ''}
+                                                {room.maxChildren > 0 ? `, ${room.maxChildren} children` : ''}
                                             </p>
                                         </div>
                                         <div className="text-right">
@@ -90,9 +75,8 @@ function RoomStep() {
                                         </div>
                                     </div>
 
-                                    {/* Amenities */}
                                     <div className="flex flex-wrap gap-2">
-                                        {room.amenities.map(amenity => (
+                                        {room.amenities.map((amenity) => (
                                             <span
                                                 key={amenity}
                                                 className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
@@ -102,7 +86,6 @@ function RoomStep() {
                                         ))}
                                     </div>
 
-                                    {/* Total for stay */}
                                     <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
                                         <span className="text-sm text-gray-500">
                                             Total for {numberOfNights} night{numberOfNights > 1 ? 's' : ''}
@@ -127,20 +110,18 @@ function RoomStep() {
             {/* Navigation */}
             <div className="flex gap-3 pt-2">
                 <button
-                    onClick={prevStep}
+                    onClick={() => dispatch(prevStep())}
                     className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                     ← Back
                 </button>
                 <button
-                    onClick={nextStep}
+                    onClick={() => dispatch(nextStep())}
                     disabled={!selectedRoom}
-                    className={`
-                        flex-2 flex-grow font-semibold py-3 rounded-xl transition-colors
+                    className={`flex-grow font-semibold py-3 rounded-xl transition-colors
                         ${selectedRoom
                             ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
-                    `}
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                 >
                     Continue →
                 </button>

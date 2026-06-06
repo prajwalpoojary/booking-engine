@@ -1,15 +1,14 @@
 import { create } from 'zustand';
 
-const useRecentlyViewedStore = create((set, get) => ({
+const useRecentlyViewedStore = create((set) => ({
     hotels: [],
-
-    addHotel: (hotel) => {
-        const current = get().hotels;
-        const filtered = current.filter(h => h.id !== hotel.id);
-        set({ hotels: [hotel, ...filtered].slice(0, 5) });
-    },
-
-    clearAll: () => set({ hotels: [] }),
+    addHotel: (hotel) =>
+        set((state) => {
+            const exists = state.hotels.some(h => h.id === hotel.id);
+            if (exists) return state;
+            return { hotels: [hotel, ...state.hotels].slice(0, 10) };
+        }),
+    clearHotels: () => set({ hotels: [] }),
 }));
 
 export default useRecentlyViewedStore;
