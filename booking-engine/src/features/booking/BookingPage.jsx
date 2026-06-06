@@ -1,4 +1,12 @@
-import useBookingStore from '../../store/bookingStore';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    setProperty,
+    setSelectedRoom,
+    setSearchDetails,
+    setGuestDetails,
+    goToStep,
+    nextStep,
+} from '../../store/bookingStore';
 import SearchStep from './steps/SearchStep';
 import RoomStep from './steps/RoomStep';
 import AddonStep from './steps/AddonStep';
@@ -16,35 +24,32 @@ const steps = [
 ];
 
 function StepIndicator() {
-    const currentStep = useBookingStore(state => state.currentStep);
-    const property = useBookingStore(state => state.property);
+    const currentStep = useSelector((state) => state.booking.currentStep);
+    const property = useSelector((state) => state.booking.property);
 
-    // Step 3 is conditional — skip it in indicator if no addons
-    const visibleSteps = steps.filter(s =>
-        s.id !== 3 || property?.hasAddons
-    );
+    const visibleSteps = steps.filter((s) => s.id !== 3 || property?.hasAddons);
 
     return (
         <div className="flex items-center justify-center gap-2 py-6 px-4">
             {visibleSteps.map((step, index) => (
                 <div key={step.id} className="flex items-center gap-2">
-                    <div className={`
-                        flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold
+                    <div
+                        className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold
                         ${currentStep === step.id
                             ? 'bg-blue-600 text-white'
                             : currentStep > step.id
                                 ? 'bg-green-500 text-white'
-                                : 'bg-gray-200 text-gray-500'}
-                    `}>
+                                : 'bg-gray-200 text-gray-500'}`}
+                    >
                         {currentStep > step.id ? '✓' : index + 1}
                     </div>
-                    <span className={`text-sm hidden sm:block
+                    <span className={`hidden min-[1100px]:block
                         ${currentStep === step.id ? 'text-blue-600 font-medium' : 'text-gray-400'}
                     `}>
                         {step.label}
                     </span>
                     {index < visibleSteps.length - 1 && (
-                        <div className={`w-8 h-0.5 
+                        <div className={`hidden min-[620px]:block w-10 h-0.5
                             ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}
                         `} />
                     )}
@@ -55,8 +60,8 @@ function StepIndicator() {
 }
 
 function BookingPage() {
-    const currentStep = useBookingStore(state => state.currentStep);
-    const property = useBookingStore(state => state.property);
+    const currentStep = useSelector((state) => state.booking.currentStep);
+    const property = useSelector((state) => state.booking.property);
 
     const renderStep = () => {
         switch (currentStep) {
@@ -89,49 +94,44 @@ function BookingPage() {
     );
 }
 
-// Add this component inside BookingPage.jsx — above the return
 function DevNav() {
-    const goToStep = useBookingStore(state => state.goToStep);
-    const setProperty = useBookingStore(state => state.setProperty);
-    const setSelectedRoom = useBookingStore(state => state.setSelectedRoom);
-    const setSearchDetails = useBookingStore(state => state.setSearchDetails);
-    const setGuestDetails = useBookingStore(state => state.setGuestDetails);
+    const dispatch = useDispatch();
 
-    if (import.meta.env.PROD) return null; // never shows in production
+    if (import.meta.env.PROD) return null;
 
     const fillTestData = () => {
-        setProperty({
+        dispatch(setProperty({
             id: 1,
-            name: "The Grand Mumbai",
-            location: "Mumbai",
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+            name: 'Lorem Palace',
+            location: 'Ipsum City',
+            image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
             hasAddons: true,
-        });
-        setSearchDetails({
+        }));
+        dispatch(setSearchDetails({
             checkIn: '2026-07-01',
             checkOut: '2026-07-03',
             adults: 2,
             children: 0,
             childrenAges: [],
             promoCode: '',
-        });
-        setSelectedRoom({
+        }));
+        dispatch(setSelectedRoom({
             id: 2,
             propertyId: 1,
-            name: "Deluxe Room",
-            type: "deluxe",
+            name: 'Dolor Suite',
+            type: 'deluxe',
             pricePerNight: 5500,
             maxAdults: 2,
             maxChildren: 2,
-            amenities: ["WiFi", "AC", "TV", "Mini Bar", "City View"],
-            image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800",
-        });
-        setGuestDetails({
+            amenities: ['WiFi', 'AC', 'TV', 'Mini Bar', 'City View'],
+            image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
+        }));
+        dispatch(setGuestDetails({
             name: 'Test User',
             email: 'test@example.com',
             phone: '9876543210',
             message: '',
-        });
+        }));
     };
 
     return (
@@ -144,10 +144,10 @@ function DevNav() {
                 Fill Test Data
             </button>
             <div className="grid grid-cols-3 gap-1">
-                {[1,2,3,4,5,6].map(s => (
+                {[1, 2, 3, 4, 5, 6].map((s) => (
                     <button
                         key={s}
-                        onClick={() => goToStep(s)}
+                        onClick={() => dispatch(goToStep(s))}
                         className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
                     >
                         S{s}
