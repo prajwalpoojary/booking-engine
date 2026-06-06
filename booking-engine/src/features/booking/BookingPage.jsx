@@ -49,7 +49,7 @@ function StepIndicator() {
                         {step.label}
                     </span>
                     {index < visibleSteps.length - 1 && (
-                        <div className={`hidden min-[520px]:block w-10 h-0.5
+                        <div className={`hidden min-[620px]:block w-10 h-0.5
                             ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}
                         `} />
                     )}
