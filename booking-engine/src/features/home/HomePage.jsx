@@ -5,8 +5,6 @@ import { properties } from '../../data/properties';
 import { rooms } from '../../data/rooms';
 import { setProperty } from '../../store/bookingStore';
 import useRecentlyViewedStore from '../../store/recentlyViewedStore';
-import HotelListRTK from './HotelListRTK';
-import HotelDetailRTQ from './HotelDetailRTQ';
 
 // ─── Search Store (local — only used on this page) ────────────────
 function useHotelFilter() {
@@ -189,10 +187,6 @@ function HomePage() {
                         </div>
                     )}
                 </div>
-                {/* Hotels via Redux */}
-                <HotelListRTK />
-                {/* Hotel Detail via TanStack Query */}
-                <HotelDetailRTQ />
             </main>
         </div>
     );
