@@ -1,13 +1,35 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setPaymentStatus, nextStep, prevStep, selectTotalAmount } from '../../../store/bookingStore';
+import { setPaymentStatus, nextStep, prevStep, goToStep, selectTotalAmount } from '../../../store/bookingStore';
 import { calculateNights } from '../../../utils/booking';
 import { useSubmitBooking } from '../../../hooks/useSubmitBooking';
 
 function PaymentStep() {
-    const { mutateAsync, isPending, isError, error } = useSubmitBooking();
-
     const dispatch = useDispatch();
+    const { paymentStatus, currentStep } = useSelector(state => state.booking);
+    const { mutate, isPending, isError, error } = useSubmitBooking({
+        onMutate: async (bookingData) => {
+            // Snapshot the current state before making optimistic update
+            const snapshot = {
+                paymentStatus: paymentStatus,
+                currentStep: currentStep
+            };
+            // Optimistically update to show processing state
+            dispatch(setPaymentStatus('processing'));
+            // Note: We don't move to next step yet - we'll do that on success
+            return snapshot;
+        },
+        onSuccess: () => {
+            // Mutation succeeded - update to success and move to next step
+            dispatch(setPaymentStatus('success'));
+            dispatch(nextStep());
+        },
+        onError: (err, _, snapshot) => {
+            // Mutation failed - rollback to snapshot
+            dispatch(setPaymentStatus(snapshot.paymentStatus));
+            dispatch(goToStep(snapshot.currentStep));
+        },
+    });
     const property = useSelector((state) => state.booking.property);
     const selectedRoom = useSelector((state) => state.booking.selectedRoom);
     const checkIn = useSelector((state) => state.booking.checkIn);
@@ -34,7 +56,7 @@ function PaymentStep() {
         return newErrors;
     };
 
-    const handlePayment = async () => {
+    const handlePayment = () => {
         const newErrors = validate();
 
         if (Object.keys(newErrors).length > 0) {
@@ -56,18 +78,7 @@ function PaymentStep() {
             },
         };
 
-        dispatch(setPaymentStatus('processing'));
-
-        // Simulate payment processing delay
-        try {
-            await mutateAsync(bookingData);
-        } catch (err) {
-            dispatch(setPaymentStatus('error'));
-            return;
-        }
-
-        dispatch(setPaymentStatus('success'));
-        dispatch(nextStep());
+        mutate(bookingData);
     };
 
     const formatCardNumber = (value) => {
