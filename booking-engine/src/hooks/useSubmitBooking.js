@@ -12,6 +12,9 @@ const submitBooking = async (bookingData) => {
     return res.json();
 }
 
-export const useSubmitBooking = () => {
-    return useMutation({ mutationFn: submitBooking });
+export const useSubmitBooking = (options = {}) => {
+    return useMutation({
+        mutationFn: submitBooking,
+        ...options
+    });
 }
