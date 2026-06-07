@@ -4,16 +4,34 @@ import { fetchHotels, clearHotels } from '../../store/hotelsSlice';
 
 function HotelListRTK() {
     const dispatch = useDispatch();
-    const items = useSelector(state => state.hotels.items);
-    const status = useSelector(state => state.hotels.status);
-    const error = useSelector(state => state.hotels.error);
+    const { items, status, error, hasMore } = useSelector(state => state.hotels);
 
+    // Load initial hotels
     useEffect(() => {
         dispatch(fetchHotels());
         return () => dispatch(clearHotels());
     }, [dispatch]);
 
-    if (status === 'loading') return <p>Loading hotels...</p>;
+    // Load more when near bottom (simple scroll detection)
+    useEffect(() => {
+        if (status === 'success' && hasMore) {
+            const handleScroll = () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight;
+                const bodyHeight = document.body.offsetHeight;
+
+                // Trigger load more when within 200px of bottom
+                if (scrollTop + windowHeight >= bodyHeight - 200) {
+                    dispatch(fetchHotels());
+                }
+            };
+
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+        }
+    }, [status, hasMore, dispatch]);
+
+    if (status === 'loading' && items.length === 0) return <p>Loading hotels...</p>;
     if (status === 'error') return <p>Error: {error}</p>;
 
     return (
@@ -38,6 +56,13 @@ function HotelListRTK() {
                     </div>
                 ))}
             </div>
+            {hasMore && status === 'success' && (
+                <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                        Scroll down to load more hotels...
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
