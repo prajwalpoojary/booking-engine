@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setPaymentStatus, nextStep, prevStep, selectTotalAmount } from '../../../store/bookingStore';
 import { calculateNights } from '../../../utils/booking';
+import { useSubmitBooking } from '../../../hooks/useSubmitBooking';
 
 function PaymentStep() {
+    const { mutateAsync, isPending, isError, error } = useSubmitBooking();
+
     const dispatch = useDispatch();
     const property = useSelector((state) => state.booking.property);
     const selectedRoom = useSelector((state) => state.booking.selectedRoom);
@@ -17,7 +20,6 @@ function PaymentStep() {
     const [cvv, setCvv] = useState('');
     const [nameOnCard, setNameOnCard] = useState('');
     const [errors, setErrors] = useState({});
-    const [isProcessing, setIsProcessing] = useState(false);
 
     const numberOfNights = checkIn && checkOut
         ? Math.max(0, Math.floor((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
@@ -34,17 +36,36 @@ function PaymentStep() {
 
     const handlePayment = async () => {
         const newErrors = validate();
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
 
-        setIsProcessing(true);
+        const bookingData = {
+            propertyId: property.id,
+            roomId: selectedRoom.id,
+            checkIn,
+            checkOut,
+            guestDetails,
+            paymentInfo: {
+                nameOnCard,
+                cardNumber,
+                expiry,
+                cvv,
+            },
+        };
+
         dispatch(setPaymentStatus('processing'));
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Simulate payment processing delay
+        try {
+            await mutateAsync(bookingData);
+        } catch (err) {
+            dispatch(setPaymentStatus('error'));
+            return;
+        }
 
-        setIsProcessing(false);
         dispatch(setPaymentStatus('success'));
         dispatch(nextStep());
     };
@@ -123,20 +144,22 @@ function PaymentStep() {
             <div className="flex gap-3 pt-2">
                 <button
                     onClick={() => dispatch(prevStep())}
-                    disabled={isProcessing}
+                    disabled={isPending}
                     className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                     ← Back
                 </button>
                 <button
                     onClick={handlePayment}
-                    disabled={isProcessing}
+                    disabled={isPending}
                     className={`flex-grow font-semibold py-3 rounded-xl transition-colors
-                        ${isProcessing ? 'bg-blue-400 text-white cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                        ${isPending ? 'bg-blue-400 text-white cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                 >
-                    {isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString()}`}
+                    {isPending ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString()}`}
                 </button>
             </div>
+
+            {isError && <p className="text-red-500 text-sm">Error: {error.message}</p>}
 
             <p className="text-xs text-gray-400 text-center">This is a demo payment. No real transaction will occur.</p>
         </div>
