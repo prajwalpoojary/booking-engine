@@ -9,17 +9,19 @@ import useRecentlyViewedStore from '../../store/recentlyViewedStore';
 // ─── Search Store (local — only used on this page) ────────────────
 function useHotelFilter() {
     const [city, setCity] = useState('');
-    const [stars, setStars] = useState('All');
+    const [maxPrice, setMaxPrice] = useState('All');
 
     const filteredProperties = properties.filter(p => {
         const matchesCity = p.location.toLowerCase().includes(city.toLowerCase());
+        if (!matchesCity) return false;
         const propertyRooms = rooms.filter(r => r.propertyId === p.id);
+        if (propertyRooms.length === 0) return false;
         const minPrice = Math.min(...propertyRooms.map(r => r.pricePerNight));
-        const matchesStars = stars === 'All' || minPrice <= Number(stars);
-        return matchesCity;
+        const matchesPrice = maxPrice === 'All' || minPrice <= Number(maxPrice);
+        return matchesPrice;
     });
 
-    return { city, setCity, stars, setStars, filteredProperties };
+    return { city, setCity, maxPrice, setMaxPrice, filteredProperties };
 }
 
 // ─── Property Card ─────────────────────────────────────────────────
@@ -36,7 +38,7 @@ function PropertyCard({ property }) {
     const handleClick = () => {
         addHotel(property);
         dispatch(setProperty(property));
-        navigate('/booking');
+        navigate(`/property/${property.id}`);
     };
 
     return (
@@ -114,7 +116,7 @@ function RecentlyViewed() {
 
 // ─── Home Page ─────────────────────────────────────────────────────
 function HomePage() {
-    const { city, setCity, stars, setStars, filteredProperties } = useHotelFilter();
+    const { city, setCity, maxPrice, setMaxPrice, filteredProperties } = useHotelFilter();
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -143,8 +145,8 @@ function HomePage() {
                             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <select
-                            value={stars}
-                            onChange={e => setStars(e.target.value)}
+                            value={maxPrice}
+                            onChange={e => setMaxPrice(e.target.value)}
                             className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="All">All Prices</option>

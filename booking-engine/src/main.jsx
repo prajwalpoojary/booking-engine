@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import reduxStore from './store/reduxStore';
 import App from './App.jsx';
+import { AuthProvider } from './features/auth/AuthContext';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')).render(
     <StrictMode>
         <Provider store={reduxStore}>
             <QueryClientProvider client={queryClient}>
-                <App />
+                <AuthProvider>
+                    <App />
+                </AuthProvider>
             </QueryClientProvider>
         </Provider>
     </StrictMode>
