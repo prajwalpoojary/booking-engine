@@ -7,10 +7,10 @@ import {
     goToStep,
     nextStep,
 } from '../../store/bookingStore';
-import SearchStep from './steps/SearchStep';
+import SearchStep from './steps/SearchStep.tsx';
 import RoomStep from './steps/RoomStep';
 import AddonStep from './steps/AddonStep';
-import GuestDetailsStep from './steps/GuestDetailsStep';
+import GuestDetailsStep from './steps/GuestDetailsStep.tsx';
 import PaymentStep from './steps/PaymentStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 
